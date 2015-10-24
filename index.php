@@ -1,12 +1,13 @@
 <?php
 header('Content-type: application/json');
 header("access-control-allow-origin: *");
+$domain = "http://test-panatrans.herokuapp.com";
 if(isset($_GET['from']) && isset($_GET['to']))
 {
 $from = $_GET['from'];
 $to = $_GET['to'];
-$urlFrom="http://54.174.147.117:3000/v1/stops/$from?with_stop_sequences=true";
-$urlTo="http://54.174.147.117:3000/v1/stops/$to?with_stop_sequences=true";
+$urlFrom=$domain."/v1/stops/$from?with_stop_sequences=true";
+$urlTo=$domain."/v1/stops/$to?with_stop_sequences=true";
 
 //  Initiate curl
 $chFrom = localCurl($urlFrom);
@@ -51,7 +52,7 @@ foreach ($stopFrom['data']['routes'] as $key => $routeFrom) {
 						  && $stopSeqFrom['stop_id'] != $stopFrom['data']['id']) { // un from stop que sea diferente al del origen 
 							array_push($searchedStop, $stopSeqFrom['stop_id']);
  							// 2: buscar cada uno de los stop sequence del origen el los stop sequence del destino
-							$chStop = localCurl("http://54.174.147.117:3000/v1/stops/".$stopSeqTo['stop_id']);
+							$chStop = localCurl($domain."/v1/stops/".$stopSeqTo['stop_id']);
 							$toStopObj=json_decode(curl_exec($chStop), true);
 							curl_close($chStop);
 							$travel += 1;
