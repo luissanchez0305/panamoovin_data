@@ -101,17 +101,9 @@ foreach ($stopFrom['data']['routes'] as $key => $routeFrom) {
  */
  $travelIndex = 1;
  usort($response, 'sortByTotal');
- foreach ($response as $key => $travel) {
+ /*foreach ($response as $key => $travel) {
  	echo json_encode($travel).'<br><br>';
 	echo '*****************************<br>';
- }
- /*foreach ($response as $key => $travel) {
- 	if($travel['travel'] != $travelIndex){
- 		$travelIndex = $travel['travel'];
-		echo '<br>';
-	}
-	echo '<label style="padding-left: 10px;">Travel('.$travel['travel'].') <a href="'.$travel['url'].'" target="_blank">'.
-		$travel['name'].'</a>: '.$travel['from'].' ('.$travel['seqFrom'].') - '.$travel['to'].' ('.$travel['seqTo'].') *Total: '.$travel['total'].'</label><br>';
  }*/
 echo json_encode($response);
 }
