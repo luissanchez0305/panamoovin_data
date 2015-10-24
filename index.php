@@ -41,46 +41,57 @@ foreach ($stopFrom['data']['routes'] as $key => $routeFrom) {
 				$travel += 1;
 				//echo '<label style="padding-left: 10px;">Travel('.$travel.') '.$routeFrom['name'].': '.$stopFrom['data']['name'].' - '.$stopTo['data']['name'].'</label><br>';
 				$total = $fromSequence > $stopSeqFrom['sequence'] ? $fromSequence - $stopSeqFrom['sequence'] : $stopSeqFrom['sequence'] - $fromSequence;
-				array_push($response, loadResponse(1, $travel, $routeFrom, array($stopSeqFrom['trip_id']), array($stopFrom), array($stopTo), array($fromSequence), array($stopSeqFrom['sequence']), $total));
+				array_push($response, loadResponse(
+					1, 
+					$travel, 
+					array($routeFrom), 
+					array($stopSeqFrom['trip_id']), 
+					array($stopFrom), 
+					array($stopTo), 
+					array($fromSequence), 
+					array($stopSeqFrom['sequence']), 
+					$total));
 			}
 		}
-		foreach ($tripFrom['stop_sequences'] as $key => $stopSeqFrom) {
-			foreach ($stopTo['data']['routes'] as $key => $routeTo) {
-				foreach ($routeTo['trips'] as $key => $tripTo) {
-					foreach ($tripTo['stop_sequences'] as $key => $stopSeqTo) {
-						if(!in_array($stopSeqFrom['stop_id'], $searchedStop) // un from stop que no ha sido buscado anteriormente
-						  && $stopSeqFrom['stop_id'] == $stopSeqTo['stop_id'] // un from stop que este en stop sequences de To
-						  && $stopSeqFrom['stop_id'] != $stopFrom['data']['id']) { // un from stop que sea diferente al del origen 
-							array_push($searchedStop, $stopSeqFrom['stop_id']);
- 							// 2: buscar cada uno de los stop sequence del origen el los stop sequence del destino
-							$chStop = localCurl($domain."/v1/stops/".$stopSeqTo['stop_id']);
-							$toStopObj=json_decode(curl_exec($chStop), true);
-							curl_close($chStop);
-							$travel += 1;
-							//echo '<label style="padding-left: 10px;">Travel('.$travel.') '.$routeFrom['name'].': '.$stopFrom['data']['name'].' - '.$toStopObj['data']['name'].'</label><br>';	
-							//echo '<label style="padding-left: 10px;">Travel('.$travel.') '.$routeTo['name'].': '.$toStopObj['data']['name'].' - '.$stopTo['data']['name'].'</label><br>';
-							$fromSequence = -1;
-							$toSequence = -1;
-							foreach ($tripFrom['stop_sequences'] as $key => $fromSequenceOnTrip) {
-								if($fromSequenceOnTrip['stop_id'] == $stopFrom['data']['id'])
-									$fromSequence = $fromSequenceOnTrip['sequence'];
+		if(count($response) == 0){
+			foreach ($tripFrom['stop_sequences'] as $key => $stopSeqFrom) {
+				foreach ($stopTo['data']['routes'] as $key => $routeTo) {
+					foreach ($routeTo['trips'] as $key => $tripTo) {
+						foreach ($tripTo['stop_sequences'] as $key => $stopSeqTo) {
+							if(!in_array($stopSeqFrom['stop_id'], $searchedStop) // un from stop que no ha sido buscado anteriormente
+							  && $stopSeqFrom['stop_id'] == $stopSeqTo['stop_id'] // un from stop que este en stop sequences de To
+							  && $stopSeqFrom['stop_id'] != $stopFrom['data']['id']) { // un from stop que sea diferente al del origen 
+								array_push($searchedStop, $stopSeqFrom['stop_id']);
+	 							// 2: buscar cada uno de los stop sequence del origen el los stop sequence del destino
+								$chStop = localCurl($domain."/v1/stops/".$stopSeqTo['stop_id']);
+								$toStopObj=json_decode(curl_exec($chStop), true);
+								curl_close($chStop);
+								$travel += 1;
+								//echo '<label style="padding-left: 10px;">Travel('.$travel.') '.$routeFrom['name'].': '.$stopFrom['data']['name'].' - '.$toStopObj['data']['name'].'</label><br>';	
+								//echo '<label style="padding-left: 10px;">Travel('.$travel.') '.$routeTo['name'].': '.$toStopObj['data']['name'].' - '.$stopTo['data']['name'].'</label><br>';
+								$fromSequence = -1;
+								$toSequence = -1;
+								foreach ($tripFrom['stop_sequences'] as $key => $fromSequenceOnTrip) {
+									if($fromSequenceOnTrip['stop_id'] == $stopFrom['data']['id'])
+										$fromSequence = $fromSequenceOnTrip['sequence'];
+								}
+								foreach ($tripTo['stop_sequences'] as $key => $toSequenceOnTrip) {
+									if($toSequenceOnTrip['stop_id'] == $stopTo['data']['id'])
+										$toSequence = $toSequenceOnTrip['sequence'];
+								}
+								$total = ($fromSequence > $stopSeqFrom['sequence'] ? $fromSequence - $stopSeqFrom['sequence'] : $stopSeqFrom['sequence'] - $fromSequence) 
+								+ ($stopSeqTo['sequence'] > $toSequence ? $stopSeqTo['sequence'] - $toSequence : $toSequence - $stopSeqTo['sequence']);
+								array_push($response, loadResponse(
+									2, 
+									$travel, 
+									array($routeFrom, $routeTo), 
+									array($stopSeqFrom['trip_id'],$stopSeqTo['trip_id']), 
+									array($stopFrom, $toStopObj), 
+									array($toStopObj,$stopTo), 
+									array($fromSequence, $stopSeqTo['sequence']), 
+									array($stopSeqFrom['sequence'],$toSequence), 
+									$total));
 							}
-							foreach ($tripTo['stop_sequences'] as $key => $toSequenceOnTrip) {
-								if($toSequenceOnTrip['stop_id'] == $stopTo['data']['id'])
-									$toSequence = $toSequenceOnTrip['sequence'];
-							}
-							$total = ($fromSequence > $stopSeqFrom['sequence'] ? $fromSequence - $stopSeqFrom['sequence'] : $stopSeqFrom['sequence'] - $fromSequence) 
-							+ ($stopSeqTo['sequence'] > $toSequence ? $stopSeqTo['sequence'] - $toSequence : $toSequence - $stopSeqTo['sequence']);
-							array_push($response, loadResponse(
-								2, 
-								$travel, 
-								array($routeFrom, $routeTo), 
-								array($stopSeqFrom['trip_id'],$stopSeqTo['trip_id']), 
-								array($stopFrom, $toStopObj), 
-								array($toStopObj,$stopTo), 
-								array($fromSequence, $stopSeqTo['sequence']), 
-								array($stopSeqFrom['sequence'],$toSequence), 
-								$total));
 						}
 					}
 				}
