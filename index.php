@@ -1,4 +1,6 @@
 <?php
+header('Content-type: application/json');
+header("access-control-allow-origin: *");
 if(isset($_GET['from']) && isset($_GET['to']))
 {
 $from = $_GET['from'];
